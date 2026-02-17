@@ -151,5 +151,17 @@ function displayResults(probs) {
     resultDiv.innerHTML = html;
 }
 
+async function resetDeck() {
+    if (!confirm('Are you sure you want to reset the deck? All marks will be cleared.')) {
+        return;
+    }
+
+    markedCards.clear();
+    const markedElements = document.querySelectorAll('.card.marked');
+    markedElements.forEach(el => el.classList.remove('marked'));
+
+    await saveState();
+}
+
 // Start the app
 init();
