@@ -1,0 +1,93 @@
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    margin: 0;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+h1 {
+    font-weight: 300;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    color: #ffffff;
+    text-transform: uppercase;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+}
+
+.deck-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.suit-row {
+    display: flex;
+    gap: 12px;
+}
+
+.card {
+    width: 50px;
+    height: 75px;
+    background: #ffffff;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    position: relative;
+    border: 1px solid #ccc;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+.card:active {
+    transform: translateY(-1px);
+}
+
+.card.red {
+    color: #d32f2f;
+}
+
+.card.black {
+    color: #212121;
+}
+
+/* Marked State */
+.card.marked {
+    background: #424242;
+    color: #757575;
+    border-color: #555;
+    opacity: 0.5;
+    transform: none;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.card.marked:hover {
+    transform: none;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    cursor: default;
+}
