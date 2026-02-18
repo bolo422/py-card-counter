@@ -2,6 +2,9 @@ import random
 from collections import Counter
 import itertools
 
+#Iterations
+INTERATIONS = 10000
+
 # Card definitions
 SUITS = ['S', 'H', 'C', 'D']
 RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
@@ -193,7 +196,7 @@ def _has_straight(cards):
             return True
     return False
 
-def calculate_probabilities(marked_cards_ids, cards_to_draw, iterations=1000):
+def calculate_probabilities(marked_cards_ids, cards_to_draw, iterations=INTERATIONS):
     full_deck = get_deck()
     remaining_deck = [c for c in full_deck if c not in marked_cards_ids]
     
