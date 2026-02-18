@@ -208,17 +208,122 @@ def calculate_probabilities(marked_cards_ids, cards_to_draw, iterations=1000):
         rank = evaluate_hand(parsed_drawn)
         results[rank] += 1
         
+    # Pre-calculate deck stats for possibility checks
+    active_deck_strs = [c for c in remaining_deck if c != "J-BLK"]
+    active_deck = [parse_card(c) for c in active_deck_strs]
+    wild_count = sum(1 for c in active_deck if c["value"] == 15)
+    normal_cards = [c for c in active_deck if c["value"] != 15]
+    
+    max_hand_size = min(cards_to_draw, len(active_deck))
+    
+    rank_counts = Counter(c["value"] for c in normal_cards)
+    suit_counts = Counter(c["suit"] for c in normal_cards)
+    present_ranks = set(c["value"] for c in normal_cards)
+
+    def is_possible(hand_val):
+        if hand_val == ROYAL_FLUSH:
+            # Check per suit for {10,J,Q,K,A}
+            if max_hand_size < 5: return False
+            for s in SUITS:
+                suit_cards = {c["value"] for c in normal_cards if c["suit"] == s}
+                needed = 0
+                for r in [10, 11, 12, 13, 14]:
+                    if r not in suit_cards: needed += 1
+                if wild_count >= needed: return True
+            return False
+
+        if hand_val == STRAIGHT_FLUSH:
+            if max_hand_size < 5: return False
+            for s in SUITS:
+                suit_vals = {c["value"] for c in normal_cards if c["suit"] == s}
+                # Check normal range 2-6 to 10-14
+                for start in range(2, 11):
+                    window = set(range(start, start+5))
+                    needed = len(window) - len(window.intersection(suit_vals))
+                    if wild_count >= needed: return True
+                # Check A-low: A,2,3,4,5 -> {14,2,3,4,5}
+                window = {14, 2, 3, 4, 5}
+                needed = len(window) - len(window.intersection(suit_vals))
+                if wild_count >= needed: return True
+            return False
+
+        if hand_val == FOUR_OF_A_KIND:
+            if max_hand_size < 4: return False
+            for r in range(2, 15):
+                if rank_counts[r] + wild_count >= 4: return True
+            return False
+
+        if hand_val == FULL_HOUSE:
+            if max_hand_size < 5: return False
+            for r1 in range(2, 15):
+                for r2 in range(2, 15):
+                    if r1 == r2: continue
+                    needed = max(0, 3 - rank_counts[r1]) + max(0, 2 - rank_counts[r2])
+                    if wild_count >= needed: return True
+            return False
+
+        if hand_val == FLUSH:
+            if max_hand_size < 5: return False
+            for s in SUITS:
+                if suit_counts[s] + wild_count >= 5: return True
+            return False
+
+        if hand_val == STRAIGHT:
+            if max_hand_size < 5: return False
+            for start in range(2, 11):
+                window = set(range(start, start+5))
+                needed = len(window) - len(window.intersection(present_ranks))
+                if wild_count >= needed: return True
+            # A-low
+            window = {14, 2, 3, 4, 5}
+            needed = len(window) - len(window.intersection(present_ranks))
+            if wild_count >= needed: return True
+            return False
+
+        if hand_val == THREE_OF_A_KIND:
+            if max_hand_size < 3: return False
+            for r in range(2, 15):
+                if rank_counts[r] + wild_count >= 3: return True
+            return False
+
+        if hand_val == TWO_PAIR:
+            if max_hand_size < 4: return False
+            for r1 in range(2, 15):
+                for r2 in range(2, 15):
+                    if r1 >= r2: continue
+                    needed = max(0, 2 - rank_counts[r1]) + max(0, 2 - rank_counts[r2])
+                    if wild_count >= needed: return True
+            return False
+
+        if hand_val == PAIR:
+            if max_hand_size < 2: return False
+            for r in range(2, 15):
+                if rank_counts[r] + wild_count >= 2: return True
+            return False
+
+        if hand_val == HIGH_CARD:
+            return max_hand_size >= 1
+            
+        return False
+
+    def results_with_min(count, iterations, hand_type):
+        percentage = count / iterations * 100
+        if percentage == 0:
+            if is_possible(hand_type):
+                return 0.01
+        return percentage
+
     probabilities = {
-        "Royal Flush": results[ROYAL_FLUSH] / iterations * 100,
-        "Straight Flush": results[STRAIGHT_FLUSH] / iterations * 100,
-        "Four of a Kind": results[FOUR_OF_A_KIND] / iterations * 100,
-        "Full House": results[FULL_HOUSE] / iterations * 100,
-        "Flush": results[FLUSH] / iterations * 100,
-        "Straight": results[STRAIGHT] / iterations * 100,
-        "Three of a Kind": results[THREE_OF_A_KIND] / iterations * 100,
-        "Two Pair": results[TWO_PAIR] / iterations * 100,
-        "Pair": results[PAIR] / iterations * 100,
-        "High Card": results[HIGH_CARD] / iterations * 100
+        "Royal Flush": results_with_min(results[ROYAL_FLUSH], iterations, ROYAL_FLUSH),
+        "Straight Flush": results_with_min(results[STRAIGHT_FLUSH], iterations, STRAIGHT_FLUSH),
+        "Four of a Kind": results_with_min(results[FOUR_OF_A_KIND], iterations, FOUR_OF_A_KIND),
+        "Full House": results_with_min(results[FULL_HOUSE], iterations, FULL_HOUSE),
+        "Flush": results_with_min(results[FLUSH], iterations, FLUSH),
+        "Straight": results_with_min(results[STRAIGHT], iterations, STRAIGHT),
+        "Three of a Kind": results_with_min(results[THREE_OF_A_KIND], iterations, THREE_OF_A_KIND),
+        "Two Pair": results_with_min(results[TWO_PAIR], iterations, TWO_PAIR),
+        "Pair": results_with_min(results[PAIR], iterations, PAIR),
+        "High Card": results_with_min(results[HIGH_CARD], iterations, HIGH_CARD)
     }
     
     return probabilities

@@ -3,3 +3,4 @@ cards.json
 __pycache__/*
 .venv/*
 .vscode/*
+cards.json
