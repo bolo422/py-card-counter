@@ -140,12 +140,21 @@ async function calculateProbabilities() {
 
 function displayResults(probs) {
     const resultDiv = document.getElementById('calc-results');
-    let html = '<table class="result-table"><tr><th>Hand</th><th>Probability</th></tr>';
+    let html = '<table class="result-table"><tr><th>Hand</th><th>Best Hand %</th><th>Inclusive %</th></tr>';
 
-    for (const [hand, prob] of Object.entries(probs)) {
-        // Highlight likely hands
-        const style = prob > 0 ? 'color: #fff;' : 'color: #555;';
-        html += `<tr style="${style}"><td>${hand}</td><td>${prob.toFixed(2)}%</td></tr>`;
+    for (const [hand, data] of Object.entries(probs)) {
+        // Highlight likely hands (if either inclusive or best is > 0)
+        // Access data.best and data.inclusive
+        const best = data.best;
+        const inclusive = data.inclusive;
+
+        const style = (best > 0 || inclusive > 0) ? 'color: #fff;' : 'color: #555;';
+
+        html += `<tr style="${style}">
+            <td>${hand}</td>
+            <td>${best.toFixed(2)}%</td>
+            <td style="color: #aaa;">${inclusive.toFixed(2)}%</td>
+        </tr>`;
     }
     html += '</table>';
     resultDiv.innerHTML = html;
