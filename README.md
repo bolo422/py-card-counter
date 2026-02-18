@@ -47,3 +47,4 @@ Once the server is running, open your web browser (Chrome, Firefox, etc.) and go
 
 ---
 **Note:** Do not close the terminal/PowerShell window while using the tool. To stop it, press `Ctrl + C` in the window.
+---
